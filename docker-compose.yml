@@ -1,0 +1,61 @@
+version: '3.5'
+
+x-common-variables: &common-variables
+  # APP
+  NODE_ENV: development
+  APP_PORT: 3010
+  APP_NAME: "test-demetra"
+
+  # Swagger docs options
+  SWAGGER: 'true'
+  SWAGGER_URN: /api/documentation
+  SWAGGER_AUTH_LOGIN: admin
+  SWAGGER_AUTH_PASSWORD: 1234
+
+  # Database
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_DB: main
+  POSTGRES_USER: user
+  POSTGRES_PASSWORD: pass
+  POSTGRES_DEFAULT_SCHEMA: public
+  PGDATA: /data/postgres
+
+services:
+  server:
+    container_name: server-dev
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    stop_grace_period: 50s
+    environment: *common-variables
+    ports:
+      - '3010:3010'
+      - '9229:9229'
+    volumes:
+      - .:/usr/src/app
+    restart: always
+    command: npm run start:dev
+    tty: true
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: pg_dev
+    image: postgres:15.0
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: main
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DEFAULT_SCHEMA: public
+      PGDATA: /data/postgres
+    volumes:
+       - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  postgres:

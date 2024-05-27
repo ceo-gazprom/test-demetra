@@ -1,0 +1,13 @@
+{
+  "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+  },
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs":"active",
+  "editor.rulers": [
+    {
+      "column": 80,
+      "color": "#aa4c76"
+    },
+  ], 
+}
