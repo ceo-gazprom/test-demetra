@@ -46,4 +46,9 @@ export class UserController {
 
     return new UserDto(createdUser);
   }
+
+  @Get('proxy-request')
+  public async mackeProxyRequest(): Promise<void> {
+    return this.userService.poxyRequest();
+  }
 }

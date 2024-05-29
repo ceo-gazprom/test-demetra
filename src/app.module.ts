@@ -3,11 +3,16 @@ import type { Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 import { CacheModule } from '@nestjs/cache-manager';
+import { HttpModule } from '@nestjs/axios';
 import type { RedisClientOptions } from 'redis';
 import { redisStore } from 'cache-manager-redis-store';
 import type { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
 import { DatabaseLoggerConfig } from '../environments/database-logger.config';
 import { DatabaseSnakeNamingStrategy } from '../environments/database-snake-naming.strategy';
+/**
+ * Monitoring
+ */
+import { HealthcheckController } from './healthchek/healthcheck.controller';
 /**
  * User section
  */
@@ -98,8 +103,23 @@ const entities: EntityClassOrSchema[] = [UserEntity];
         }),
       ttl: 60 * 30, // 30 min
     }),
+    /**
+     * Requests
+     */
+    HttpModule.register({
+      proxy: {
+        host: '*********',
+        port: 1111,
+        auth: {
+          username: '*****',
+          password: '****',
+        },
+      },
+      timeout: 5000,
+      maxRedirects: 5,
+    }),
   ],
-  controllers: [UserController],
+  controllers: [HealthcheckController, UserController],
   providers: [...providers],
 })
 export class AppModule {}

@@ -7,7 +7,9 @@ Nestjs + typeorm + postgres + redis + bull + swagger + caching + class-validator
 
 1 - Накатить любым способом миграции из migrations (руками, flyway, postgrator и т.д.)
 
-2 - docker-compose up
+3 - Прописать креды для axios proxy в appmodule
+
+3 - docker-compose up
 
 ## ТЗ:
  - 1 ✅ Развернуть проект на NestJS.

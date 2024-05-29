@@ -9,4 +9,7 @@ export interface IUserService {
   ): Promise<IUserEntity>;
 
   getById(id: number): Promise<IUserEntity>;
+
+  // Test proxy request
+  poxyRequest(): Promise<void>;
 }

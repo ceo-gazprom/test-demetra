@@ -1,8 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
-import { CACHE_MANAGER, CacheTTL, CacheKey } from '@nestjs/cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { HttpService } from '@nestjs/axios';
 import { UserError } from './exceptions/user.error';
 import { UserErrorsEnum } from './exceptions/user-errors.enum';
 import type { IUserEntity } from './interfaces/user.entity.interface';
@@ -12,11 +13,13 @@ import { USER_REPOSITORY_TOKEN, USER_TASK_QUEUE_TOKEN } from './user.constants';
 
 @Injectable()
 export class UserService implements IUserService {
+  private readonly logger = new Logger(UserService.name);
   constructor(
     @Inject(USER_REPOSITORY_TOKEN)
     private readonly userRepository: IUserRepository,
     @InjectQueue(USER_TASK_QUEUE_TOKEN) private readonly taskQueue: Queue,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly httpService: HttpService,
   ) {}
 
   private checkEmailIsExists(email: IUserEntity['email']): Promise<boolean> {
@@ -57,5 +60,11 @@ export class UserService implements IUserService {
     await this.cacheManager.set(id.toString(), user);
 
     return user;
+  }
+
+  public async poxyRequest(): Promise<void> {
+    await this.httpService.axiosRef.get('https://ya.ru').then((data) => {
+      this.logger.log(data);
+    });
   }
 }
