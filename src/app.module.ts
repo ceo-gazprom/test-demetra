@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import type { Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
+import { CacheModule } from '@nestjs/cache-manager';
+import type { RedisClientOptions } from 'redis';
+import { redisStore } from 'cache-manager-redis-store';
 import type { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
 import { DatabaseLoggerConfig } from '../environments/database-logger.config';
 import { DatabaseSnakeNamingStrategy } from '../environments/database-snake-naming.strategy';
@@ -77,6 +80,23 @@ const entities: EntityClassOrSchema[] = [UserEntity];
       defaultJobOptions: {
         attempts: 2,
       },
+    }),
+    /**
+     * Cache
+     */
+    CacheModule.register<RedisClientOptions>({
+      /**
+       * @see https://github.com/dabroek/node-cache-manager-redis-store/issues/40
+       */
+      // @ts-ignore
+      store: async () =>
+        await redisStore({
+          socket: {
+            host: process.env.REDIS_HOST,
+            port: Number(process.env.REDIS_PORT),
+          },
+        }),
+      ttl: 60 * 30, // 30 min
     }),
   ],
   controllers: [UserController],

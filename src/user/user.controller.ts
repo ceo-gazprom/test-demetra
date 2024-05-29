@@ -8,6 +8,7 @@ import {
   UseFilters,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ResponseDto, MessagesEnum } from '../core/dtos/response.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UserIdDto } from './dtos/user-id.dto';
 import { UserDto } from './dtos/user.dto';
@@ -27,12 +28,14 @@ export class UserController {
   ) {}
 
   @Get('get-user-by-id')
-  public async getById(@Query() userIdDto: UserIdDto): Promise<UserDto> {
+  public async getById(
+    @Query() userIdDto: UserIdDto,
+  ): Promise<ResponseDto<UserDto>> {
     const { id } = userIdDto;
 
-    console.log(id);
     const user = await this.userService.getById(id);
-    return new UserDto(user);
+
+    return new ResponseDto(200, MessagesEnum.ok, new UserDto(user), 'user');
   }
 
   @Post('create')
