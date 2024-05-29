@@ -1,20 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import type { EntityManager, DataSource } from 'typeorm';
+import { InjectQueue } from '@nestjs/bull';
+import type { Queue } from 'bull';
 import { UserError } from './exceptions/user.error';
 import { UserErrorsEnum } from './exceptions/user-errors.enum';
 import type { IUserEntity } from './interfaces/user.entity.interface';
 import type { IUserService } from './interfaces/user.service.interface';
 import type { IUserRepository } from './interfaces/user.repository.interface';
-import { USER_REPOSITORY_TOKEN } from './user.constants';
+import { USER_REPOSITORY_TOKEN, USER_TASK_QUEUE_TOKEN } from './user.constants';
 
 @Injectable()
 export class UserService implements IUserService {
   constructor(
-    @InjectDataSource()
-    private readonly dataSource: DataSource,
     @Inject(USER_REPOSITORY_TOKEN)
     private readonly userRepository: IUserRepository,
+    @InjectQueue(USER_TASK_QUEUE_TOKEN) private taskQueue: Queue,
   ) {}
 
   private checkEmailIsExists(email: IUserEntity['email']): Promise<boolean> {
@@ -30,7 +29,17 @@ export class UserService implements IUserService {
 
     if (emailIsExists) throw new UserError(UserErrorsEnum.EmailAlreadyUsed);
 
-    return this.userRepository.createUser(name, email, password);
+    const user = await this.userRepository.createUser(name, email, password);
+
+    await this.taskQueue.add(
+      'test-task',
+      {
+        id: user.id,
+      },
+      { delay: 10000 },
+    );
+
+    return user;
   }
 
   public async getById(id: number): Promise<IUserEntity> {

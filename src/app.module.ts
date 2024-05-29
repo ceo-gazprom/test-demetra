@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import type { Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BullModule } from '@nestjs/bull';
 import type { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
 import { DatabaseLoggerConfig } from '../environments/database-logger.config';
 import { DatabaseSnakeNamingStrategy } from '../environments/database-snake-naming.strategy';
@@ -11,10 +12,12 @@ import { UserController } from './user/user.controller';
 import {
   USER_SERVICE_TOKEN,
   USER_REPOSITORY_TOKEN,
+  USER_TASK_QUEUE_TOKEN,
 } from './user/user.constants';
 import { UserService } from './user/user.service';
 import { UserEntity } from './user/entities/user.entity';
 import { UserRepository } from './user/repositories/user.respository';
+import { UserTaskConsumer } from './user/tuser-task.consumer';
 
 const providers: Provider[] = [
   {
@@ -25,6 +28,7 @@ const providers: Provider[] = [
     provide: USER_REPOSITORY_TOKEN,
     useClass: UserRepository,
   },
+  UserTaskConsumer,
 ];
 
 const entities: EntityClassOrSchema[] = [UserEntity];
@@ -59,6 +63,21 @@ const entities: EntityClassOrSchema[] = [UserEntity];
       migrationsRun: false,
     }),
     TypeOrmModule.forFeature([...entities]),
+    /**
+     * Queues
+     */
+    BullModule.forRoot({
+      redis: {
+        host: process.env.REDIS_HOST,
+        port: Number(process.env.REDIS_PORT),
+      },
+    }),
+    BullModule.registerQueue({
+      name: USER_TASK_QUEUE_TOKEN,
+      defaultJobOptions: {
+        attempts: 2,
+      },
+    }),
   ],
   controllers: [UserController],
   providers: [...providers],

@@ -1,10 +1,6 @@
-/**
- * -----------------------------
- *    🚀 Rocket Code 2023
- * -----------------------------
- */
 import { Injectable } from '@nestjs/common';
 import { Repository, DataSource } from 'typeorm';
+import type { UpdateResult } from 'typeorm';
 import { UserEntity } from '../entities/user.entity';
 import type { IUserEntity } from '../interfaces/user.entity.interface';
 import type { IUserRepository } from '../interfaces/user.repository.interface';
@@ -46,5 +42,14 @@ export class UserRepository
     email: IUserEntity['email'],
   ): Promise<IUserEntity> {
     return this.findOneBy({ email });
+  }
+
+  public async updateStatus(id: IUserEntity['id']): Promise<UpdateResult> {
+    return this.update(
+      {
+        id,
+      },
+      { status: true },
+    );
   }
 }

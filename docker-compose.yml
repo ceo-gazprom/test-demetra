@@ -21,6 +21,10 @@ x-common-variables: &common-variables
   POSTGRES_DEFAULT_SCHEMA: public
   PGDATA: /data/postgres
 
+  #Redis
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+
 services:
   server:
     container_name: server-dev
@@ -39,6 +43,7 @@ services:
     tty: true
     depends_on:
       - postgres
+      - redis
 
   postgres:
     container_name: pg_dev
@@ -56,6 +61,18 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    # volumes:
+    #   - /path/to/local/dаta:/root/redis
+    #   - /path/to/local/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_PORT=6379
+      - REDIS_DATABASES=1
 
 volumes:
   postgres:

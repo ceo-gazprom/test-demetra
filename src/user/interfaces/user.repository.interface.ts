@@ -1,3 +1,4 @@
+import type { UpdateResult } from 'typeorm';
 import type { IUserEntity } from './user.entity.interface';
 
 export interface IUserRepository {
@@ -9,4 +10,5 @@ export interface IUserRepository {
   existsByEmail(email: IUserEntity['email']): Promise<boolean>;
   findOneByUserId(id: IUserEntity['id']): Promise<IUserEntity>;
   findOneByEmail(email: IUserEntity['email']): Promise<IUserEntity>;
+  updateStatus(id: IUserEntity['id']): Promise<UpdateResult>;
 }
